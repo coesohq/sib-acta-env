@@ -1,0 +1,118 @@
+---
+# --- git_branch ---
+- block:
+    - name: set fact - git_branch - from environment variable
+      set_fact:
+        git_branch: "{{ ansible_env.BRANCH|replace('origin/', '') }}"
+  rescue:
+    - name: set fact - git_branch - from default value
+      set_fact:
+        git_branch: "{{ default_branch }}"
+
+
+# --- build_number ---
+- block:
+    - name: set fact - build_number - from environment variable
+      set_fact:
+        build_number: "{{ ansible_env.BUILD_NUMBER }}"
+  rescue:
+    - name: set fact - build_number - from default value
+      set_fact:
+        build_number: "{{ default_build_number }}"
+
+
+# --- node_name ---
+- block:
+    - name: set fact - node_name - from environment variable
+      set_fact:
+        node_name: "{{ ansible_env.NODE_NAME }}"
+  rescue:
+    - name: get node name
+      shell: /bin/hostname
+      register: node_name_result
+    - name: set fact - node_name - from hostname
+      set_fact:
+        node_name: "{{ node_name_result.stdout }}"
+
+
+# --- build_user ---
+- block:
+    - name: set fact - build_user - from environment variable
+      set_fact:
+        build_user: "{{ ansible_env.BUILD_USER }}"
+  rescue:
+    - name: get user name
+      shell: /usr/bin/whoami
+      register: user_name_result
+    - name: set fact - build_user - from default value
+      set_fact:
+        build_user: "{{ user_name_result.stdout }}"
+
+
+# --- build_url ---
+- block:
+    - name: set fact - build_url - from environment variable
+      set_fact:
+        build_url: "{{ ansible_env.BUILD_URL }}"
+  rescue:
+    - name: set fact - build_url - from default value
+      set_fact:
+        build_url: "{{ default_build_url }}"
+
+
+# --- build_notes ---
+- block:
+    - name: set fact - build_notes - from environment variable
+      set_fact:
+        build_notes: "{{ ansible_env.BUILD_NOTES }}"
+  rescue:
+    - name: set fact - build_notes - from default value
+      set_fact:
+        build_notes: "{{ default_build_notes }}"
+
+
+# --- current_timestamp ---
+- name: get current timestamp
+  shell: /bin/date +%Y%m%d%H%M%S
+  register: current_timestamp_result
+
+- name: set fact - current_timestamp
+  set_fact:
+    current_timestamp: "{{ current_timestamp_result.stdout }}"
+
+
+# --- version_type ---
+- block:
+    - name: set fact - version_type - from environment variable
+      set_fact:
+        VERSION_TYPE: "{{ ansible_env.VERSION_TYPE|upper() }}"
+  rescue:
+    - name: set fact - version_type
+      set_fact:
+        version_type: "{{ default_version_type|upper() }}"
+
+
+# --- release_candidate ---
+- name: set fact - release_candidate - to True
+  set_fact:
+    release_candidate: True
+  when: git_branch == "master"
+  register: release_candidate_result
+
+- name: set fact - release_candidate - to False
+  set_fact:
+    release_candidate: False
+  when: release_candidate_result|failed or git_branch != "master"
+
+
+# --- release ---
+- name: set fact - release - to build_number
+  set_fact:
+    release: "{{ build_number }}"
+  when: release_candidate == True
+  register: release_result
+
+- name: set fact - release - to build_number__current_timestamp
+  set_fact:
+    release: "{{ build_number }}_{{ current_timestamp }}"
+  when: release_result|failed or release_candidate == False
