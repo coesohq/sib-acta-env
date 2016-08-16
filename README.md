@@ -1,5 +1,5 @@
-Role Name
-=========
+synthesize-vars
+===============
 
 This role creates facts from two sources: environment variables or ansible variables.
 
@@ -46,7 +46,7 @@ Including an example of how to use your role (for instance, with variables passe
 
     - hosts: servers
       roles:
-         - { role: aikchar.sib-acta-env,
+         - { role: coesohq.sib-synthesize-vars,
              default_build_dir: "",
              default_version_type: "YYYY.MM.DD.BUILD" }
 
