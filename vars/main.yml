@@ -1,2 +1,6 @@
 ---
-# variables
+default_branch: "origin/master"
+default_build_number: "dev"
+default_build_url: "dev - no url"
+default_build_notes: "N/A"
+default_version_type: "YYYY.MM.DD.BUILD"
